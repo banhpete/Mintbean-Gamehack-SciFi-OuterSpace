@@ -1,4 +1,9 @@
+* {
+  font-family: 'Press Start 2P', cursive;
+}
+
 body {
+  background: #9e9696;
   height:100vh;
   display:flex;
   justify-content: center;

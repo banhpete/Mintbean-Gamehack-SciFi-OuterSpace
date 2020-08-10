@@ -1,8 +1,20 @@
 var config = {
-  width: 800,
-  height: 600,
+  width: 1000,
+  height: 366,
   backgroundColor: 0x000000,
-  scene: [Scene1, Scene2]
+  scene: [Scene1, Scene2],
+  pixelArt: true,
+  // 1.1 set the physics to arcade
+  physics: {
+    default: "arcade",
+    arcade: {
+      debug: false
+    }
+  }
+}
+
+var gameSettings = {
+  playerSpeed: 3
 }
 
 
