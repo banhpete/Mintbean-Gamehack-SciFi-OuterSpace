@@ -28,6 +28,7 @@ class Scene2 extends Phaser.Scene {
     this.playerShip.play("playerShip_anim");
     this.playerShip.setCollideWorldBounds(true);
     this.spaceChicken.play("spaceChicken_anim")
+    this.spaceChicken.setCollideWorldBounds(true);
     this.cursorKeys = this.input.keyboard.createCursorKeys();
   }
 
@@ -35,6 +36,7 @@ class Scene2 extends Phaser.Scene {
     this.background.tilePositionX -= 0.5;
     this.moveShipManager()
     this.checkWin()
+    this.moveChicken()
   }
 
   moveShipManager() {
@@ -66,8 +68,22 @@ class Scene2 extends Phaser.Scene {
     ship.y = randomY;
   }
 
+  moveChicken() {
+    if (Math.random() > 0.5) {
+      this.spaceChicken.x += 10 * Math.random()
+    } else {
+      this.spaceChicken.x -= 10 * Math.random()
+    }
+
+    if (Math.random() > 0.5) {
+      this.spaceChicken.y += 10 * Math.random()
+    } else {
+      this.spaceChicken.y -= 10 * Math.random()
+    }
+  }
+
   checkWin() {
-    if (this.playerShip.x > 900 && this.playerShip.x < 950 && this.playerShip.y > 150 && this.playerShip.y < 190) {
+    if (this.playerShip.x > this.spaceChicken.x - 15 && this.playerShip.x < this.spaceChicken.x + 15 && this.playerShip.y > this.spaceChicken.y - 15 && this.playerShip.y < this.spaceChicken.y + 15) {
       this.scene.start("endGame");
     }
   }
