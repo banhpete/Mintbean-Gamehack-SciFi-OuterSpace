@@ -2,7 +2,7 @@ var config = {
   width: 1000,
   height: 366,
   backgroundColor: 0x000000,
-  scene: [Scene1, Scene2],
+  scene: [Scene1, Scene2, Scene3],
   pixelArt: true,
   // 1.1 set the physics to arcade
   physics: {
@@ -14,7 +14,8 @@ var config = {
 }
 
 var gameSettings = {
-  playerSpeed: 3
+  playerSpeed: 10,
+  playerWin: false
 }
 
 

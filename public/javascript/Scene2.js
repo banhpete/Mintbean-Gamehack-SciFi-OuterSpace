@@ -34,19 +34,22 @@ class Scene2 extends Phaser.Scene {
   update() {
     this.background.tilePositionX -= 0.5;
     this.moveShipManager()
+    this.checkWin()
   }
 
   moveShipManager() {
-    if (this.cursorKeys.left.isDown) {
-      this.playerShip.x -= gameSettings.playerSpeed
-    } else if (this.cursorKeys.right.isDown) {
-      this.playerShip.x += gameSettings.playerSpeed
-    }
+    if (!gameSettings.playerWin) {
+      if (this.cursorKeys.left.isDown) {
+        this.playerShip.x -= gameSettings.playerSpeed
+      } else if (this.cursorKeys.right.isDown) {
+        this.playerShip.x += gameSettings.playerSpeed
+      }
 
-    if (this.cursorKeys.up.isDown) {
-      this.playerShip.y -= gameSettings.playerSpeed
-    } else if (this.cursorKeys.down.isDown) {
-      this.playerShip.y += gameSettings.playerSpeed
+      if (this.cursorKeys.up.isDown) {
+        this.playerShip.y -= gameSettings.playerSpeed
+      } else if (this.cursorKeys.down.isDown) {
+        this.playerShip.y += gameSettings.playerSpeed
+      }
     }
   }
 
@@ -61,6 +64,12 @@ class Scene2 extends Phaser.Scene {
     ship.x = 0;
     var randomY = Phaser.Math.Between(0, config.height);
     ship.y = randomY;
+  }
+
+  checkWin() {
+    if (this.playerShip.x > 900 && this.playerShip.x < 950 && this.playerShip.y > 150 && this.playerShip.y < 190) {
+      this.scene.start("endGame");
+    }
   }
 
 }

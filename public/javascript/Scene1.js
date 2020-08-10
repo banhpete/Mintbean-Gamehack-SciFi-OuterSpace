@@ -21,7 +21,7 @@ class Scene1 extends Phaser.Scene {
     this.background = this.add.tileSprite(0, 0, config.width, config.height, "background");
     this.background.setOrigin(0, 0);
 
-    this.add.text(5, 5, "Click To Start The Game", { font: 'Press Start 2P' });
+    this.add.text(250, 170, "Space Chicken needs help! Click to save him", { fontSize: 20 });
 
     this.background.setInteractive();
     this.input.on('gameobjectdown', this.startGame, this);
