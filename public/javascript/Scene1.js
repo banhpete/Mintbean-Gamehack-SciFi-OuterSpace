@@ -21,6 +21,7 @@ class Scene1 extends Phaser.Scene {
       frameHeight: 16
     });
 
+    this.load.image("alien", "assets/images/space-baddie.png")
     this.load.image("asteroid1", "assets/images/asteroid1.png")
     this.load.image("asteroid2", "assets/images/asteroid2.png")
     this.load.image("asteroid3", "assets/images/asteroid3.png")
@@ -86,7 +87,7 @@ class Scene1 extends Phaser.Scene {
       }, 100)
 
       setTimeout(() => {
-        this.introText2 = this.add.text(145.5, 350, ["Press Space to begin Space Chicken's rescue!"], style)
+        this.introText2 = this.add.text(145.5, 350, ["Press Space to begin Space Chicken's rescue!", "But Watch Out For the Space Aliens!"], style)
         gameSettings.isIntroDone = true;
       }, 1600)
 

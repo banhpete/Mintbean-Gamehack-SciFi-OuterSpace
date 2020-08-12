@@ -39,6 +39,12 @@ class Scene2 extends Phaser.Scene {
     this.spaceChicken.setCollideWorldBounds(true);
     this.spaceChicken.setBounce(1)
 
+    this.alien1 = this.physics.add.image(1050, 550, "alien").setScale(2)
+    this.alien1.setBounce(1)
+
+    this.alien2 = this.physics.add.image(1050, 50, "alien").setScale(2)
+    this.alien2.setBounce(1)
+
     this.asteroids = this.physics.add.group();
     for (let i = 0; i < 15; i++) {
       let asteroidString = 'asteroid' + (Math.floor(Math.random() * 3) + 1)
@@ -52,13 +58,17 @@ class Scene2 extends Phaser.Scene {
 
     this.physics.add.collider(this.asteroids)
     this.physics.add.collider(this.asteroids, this.spaceChicken, this.chickenTalk, null, this)
+    this.physics.add.collider(this.asteroids, this.alien)
     this.physics.add.overlap(this.asteroids, this.playerShip, this.playerLose, null, this)
+    this.physics.add.overlap(this.playerShip, this.alien, this.playerLose, null, this)
     this.physics.add.overlap(this.playerShip, this.spaceChicken, this.playerWin, null, this)
   }
 
   update() {
     this.background.tilePositionX -= 0.5;
     this.moveShipManager()
+    this.alienHunt(this.alien1)
+    this.alienHunt(this.alien2)
     this.chickenRotate()
   }
 
@@ -86,6 +96,17 @@ class Scene2 extends Phaser.Scene {
     if (!this.chickenText._text) {
       this.chickenText = this.add.text(chicken.x - 15, chicken.y - 15, "Ow")
       setTimeout(() => { this.chickenText.setText("") }, 500)
+    }
+  }
+
+  alienHunt(alien) {
+    if (!gameSettings.isGameDone) {
+      let xDirection = (this.playerShip.x - alien.x) / 500
+      let yDirection = (this.playerShip.y - alien.y) / 500
+      let total = Math.sqrt(Math.pow(xDirection, 2) + Math.pow(yDirection, 2))
+
+      alien.x += (xDirection / total) * 1.5;
+      alien.y += (yDirection / total) * 1.5;
     }
   }
 
