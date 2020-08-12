@@ -4,221 +4,108 @@ class Scene2 extends Phaser.Scene {
   }
 
   create() {
+    this.anims.create({
+      key: "explosion_anim",
+      frames: this.anims.generateFrameNumbers("explosion"),
+      frameRate: 20,
+      repeat: -1
+    });
+
     this.background = this.add.tileSprite(0, 0, config.width, config.height, "background");
     this.background.setOrigin(0, 0);
+
+    this.instructionText = this.add.text(20, 510, ["KEYS", "W - Move Up", "S - Move Down", "A - Move Left", "D - Move Right"])
+    this.gameTimeText = this.add.text(20, 20, `Time:${gameSettings.gameTime}`)
+    this.timeTrack = setInterval(() => { this.gameTimeText.setText(`Time:${++gameSettings.gameTime}`) }, 1000)
+    this.chickenText = {}
+
+    var highScore = localStorage.getItem('scScore') || "No High Score"
+    this.highScoreText = this.add.text(20, 40, `High Score:${highScore}`)
+
+    this.wKey = this.input.keyboard.addKey('W')
+    this.sKey = this.input.keyboard.addKey('S')
+    this.aKey = this.input.keyboard.addKey('A')
+    this.dKey = this.input.keyboard.addKey('D')
+
     this.playerShip = this.physics.add.sprite(0, 188, "playerShip").setScale(2);
     this.playerShip.angle += -90;
-    this.spaceChicken = this.physics.add.sprite(950, 188, "spaceChicken").setScale(-2);
-    this.spaceChicken.angle -= 0;
-
-    this.anims.create({
-      key: "playerShip_anim",
-      frames: this.anims.generateFrameNumbers("playerShip"),
-      frameRate: 20,
-      repeat: -1
-    });
-
-    this.anims.create({
-      key: "spaceChicken_anim",
-      frames: this.anims.generateFrameNumbers("spaceChicken"),
-      frameRate: 20,
-      repeat: -1
-    });
-
     this.playerShip.play("playerShip_anim");
     this.playerShip.setCollideWorldBounds(true);
+
+    this.spaceChicken = this.physics.add.sprite(950, 188, "spaceChicken").setScale(2);
+    this.spaceChicken.angle -= 0;
+    this.spaceChicken.setVelocity(100, 100)
     this.spaceChicken.play("spaceChicken_anim")
     this.spaceChicken.setCollideWorldBounds(true);
-    this.cursorKeys = this.input.keyboard.createCursorKeys();
+    this.spaceChicken.setBounce(1)
+
+    this.asteroids = this.physics.add.group();
+    for (let i = 0; i < 15; i++) {
+      let asteroidString = 'asteroid' + (Math.floor(Math.random() * 3) + 1)
+      let asteroid = this.physics.add.image(0, 0, asteroidString).setScale(Math.random() + 1)
+      this.asteroids.add(asteroid)
+      asteroid.setVelocity(75, 75)
+      asteroid.setCollideWorldBounds(true);
+      asteroid.setBounce(1)
+      asteroid.setRandomPosition(100, 0, game.config.width, game.config.height);
+    }
+
+    this.physics.add.collider(this.asteroids)
+    this.physics.add.collider(this.asteroids, this.spaceChicken, this.chickenTalk, null, this)
+    this.physics.add.overlap(this.asteroids, this.playerShip, this.playerLose, null, this)
+    this.physics.add.overlap(this.playerShip, this.spaceChicken, this.playerWin, null, this)
   }
 
   update() {
     this.background.tilePositionX -= 0.5;
     this.moveShipManager()
-    this.checkWin()
-    this.moveChicken()
+    this.chickenRotate()
   }
 
   moveShipManager() {
-    if (!gameSettings.playerWin) {
-      if (this.cursorKeys.left.isDown) {
+    if (!gameSettings.isGameDone) {
+      if (this.aKey.isDown) {
         this.playerShip.x -= gameSettings.playerSpeed
-      } else if (this.cursorKeys.right.isDown) {
+      } else if (this.dKey.isDown) {
         this.playerShip.x += gameSettings.playerSpeed
       }
 
-      if (this.cursorKeys.up.isDown) {
+      if (this.wKey.isDown) {
         this.playerShip.y -= gameSettings.playerSpeed
-      } else if (this.cursorKeys.down.isDown) {
+      } else if (this.sKey.isDown) {
         this.playerShip.y += gameSettings.playerSpeed
       }
     }
   }
 
-  moveShip(ship, speed) {
-    ship.x += speed;
-    if (ship.x > config.width) {
-      this.resetShipPos(ship);
+  chickenRotate() {
+    this.spaceChicken.angle += 1.5;
+  }
+
+  chickenTalk(asteroid, chicken) {
+    if (!this.chickenText._text) {
+      this.chickenText = this.add.text(chicken.x - 15, chicken.y - 15, "Ow")
+      setTimeout(() => { this.chickenText.setText("") }, 500)
     }
   }
 
-  resetShipPos(ship) {
-    ship.x = 0;
-    var randomY = Phaser.Math.Between(0, config.height);
-    ship.y = randomY;
-  }
-
-  moveChicken() {
-    if (Math.random() > 0.5) {
-      this.spaceChicken.x += 10 * Math.random()
-    } else {
-      this.spaceChicken.x -= 10 * Math.random()
-    }
-
-    if (Math.random() > 0.5) {
-      this.spaceChicken.y += 10 * Math.random()
-    } else {
-      this.spaceChicken.y -= 10 * Math.random()
+  playerWin() {
+    clearInterval(this.timeTrack)
+    if (!gameSettings.isGameDone) {
+      this.scene.start("winGame")
     }
   }
 
-  checkWin() {
-    if (this.playerShip.x > this.spaceChicken.x - 15 && this.playerShip.x < this.spaceChicken.x + 15 && this.playerShip.y > this.spaceChicken.y - 15 && this.playerShip.y < this.spaceChicken.y + 15) {
-      this.scene.start("endGame");
+  playerLose() {
+    clearInterval(this.timeTrack)
+    if (!gameSettings.isGameDone) {
+      gameSettings.isGameDone = true;
+      this.playerShip.setTexture("explosion");
+      this.playerShip.play("explosion_anim");
+      setTimeout(() => {
+        this.scene.start("loseGame")
+      }, 1000)
     }
   }
 
 }
-
-
-  // create() {
-
-  //   this.background = this.add.tileSprite(0, 0, config.width, config.height, "background");
-  //   this.background.setOrigin(0, 0);
-
-  //   this.ship1 = this.add.sprite(config.width / 2 - 50, config.height / 2, "ship");
-  //   this.ship2 = this.add.sprite(config.width / 2, config.height / 2, "ship2");
-  //   this.ship3 = this.add.sprite(config.width / 2 + 50, config.height / 2, "ship3");
-
-
-  //   this.anims.create({
-  //     key: "ship1_anim",
-  //     frames: this.anims.generateFrameNumbers("ship"),
-  //     frameRate: 20,
-  //     repeat: -1
-  //   });
-  //   this.anims.create({
-  //     key: "ship2_anim",
-  //     frames: this.anims.generateFrameNumbers("ship2"),
-  //     frameRate: 20,
-  //     repeat: -1
-  //   });
-  //   this.anims.create({
-  //     key: "ship3_anim",
-  //     frames: this.anims.generateFrameNumbers("ship3"),
-  //     frameRate: 20,
-  //     repeat: -1
-  //   });
-
-  //   this.anims.create({
-  //     key: "explode",
-  //     frames: this.anims.generateFrameNumbers("explosion"),
-  //     frameRate: 20,
-  //     repeat: 0,
-  //     hideOnComplete: true
-  //   });
-
-  //   this.ship1.play("ship1_anim");
-  //   this.ship2.play("ship2_anim");
-  //   this.ship3.play("ship3_anim");
-
-  //   this.ship1.setInteractive();
-  //   this.ship2.setInteractive();
-  //   this.ship3.setInteractive();
-
-  //   this.input.on('gameobjectdown', this.destroyShip, this);
-
-  //   this.add.text(20, 20, "Playing game", {
-  //     font: "25px Arial",
-  //     fill: "yellow"
-  //   });
-
-  //   // POWER UPS
-
-  //   //2.1 Two Animations for the power ups
-  //   this.anims.create({
-  //     key: "red",
-  //     frames: this.anims.generateFrameNumbers("power-up", {
-  //       start: 0,
-  //       end: 1
-  //     }),
-  //     frameRate: 20,
-  //     repeat: -1
-  //   });
-  //   this.anims.create({
-  //     key: "gray",
-  //     frames: this.anims.generateFrameNumbers("power-up", {
-  //       start: 2,
-  //       end: 3
-  //     }),
-  //     frameRate: 20,
-  //     repeat: -1
-  //   });
-
-  //   // 3.1
-  //   this.physics.world.setBoundsCollision();
-
-  //   this.powerUps = this.physics.add.group();
-
-  //   // 2.2 Add multiple objects
-  //   var maxObjects = 4;
-  //   for (var i = 0; i <= maxObjects; i++) {
-  //     var powerUp = this.physics.add.sprite(16, 16, "power-up");
-  //     this.powerUps.add(powerUp);
-  //     powerUp.setRandomPosition(0, 0, game.config.width, game.config.height);
-
-  //     // set random animation
-  //     if (Math.random() > 0.5) {
-  //       powerUp.play("red");
-  //     } else {
-  //       powerUp.play("gray");
-  //     }
-
-  //     // setVelocity
-  //     powerUp.setVelocity(100, 100);
-  //     // 3.2
-  //     powerUp.setCollideWorldBounds(true);
-  //     // 3.3
-  //     powerUp.setBounce(1);
-
-  //   }
-
-  // }
-
-  // update() {
-
-  //   this.moveShip(this.ship1, 1);
-  //   this.moveShip(this.ship2, 2);
-  //   this.moveShip(this.ship3, 3);
-
-  //   this.background.tilePositionY -= 0.5;
-
-  // }
-
-  // moveShip(ship, speed) {
-  //   ship.y += speed;
-  //   if (ship.y > config.height) {
-  //     this.resetShipPos(ship);
-  //   }
-  // }
-
-  // resetShipPos(ship) {
-  //   ship.y = 0;
-  //   var randomX = Phaser.Math.Between(0, config.width);
-  //   ship.x = randomX;
-  // }
-
-  // destroyShip(pointer, gameObject) {
-  //   gameObject.setTexture("explosion");
-  //   gameObject.play("explode");
-  // }
