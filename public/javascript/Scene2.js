@@ -58,7 +58,6 @@ class Scene2 extends Phaser.Scene {
 
     this.physics.add.collider(this.asteroids)
     this.physics.add.collider(this.asteroids, this.spaceChicken, this.chickenTalk, null, this)
-    this.physics.add.collider(this.asteroids, this.alien)
     this.physics.add.overlap(this.asteroids, this.playerShip, this.playerLose, null, this)
     this.physics.add.overlap(this.playerShip, this.alien, this.playerLose, null, this)
     this.physics.add.overlap(this.playerShip, this.spaceChicken, this.playerWin, null, this)
@@ -105,8 +104,8 @@ class Scene2 extends Phaser.Scene {
       let yDirection = (this.playerShip.y - alien.y) / 500
       let total = Math.sqrt(Math.pow(xDirection, 2) + Math.pow(yDirection, 2))
 
-      alien.x += (xDirection / total) * 1.5;
-      alien.y += (yDirection / total) * 1.5;
+      alien.x += (xDirection / total) * 2.5;
+      alien.y += (yDirection / total) * 2.5;
     }
   }
 
